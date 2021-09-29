@@ -1,0 +1,196 @@
+class MyTreeSetLong implements Iterable<Long> {
+	private static class NodeLong {
+	    NodeLong parent;
+	    NodeLong left;
+	    NodeLong right;
+	    long value;
+	    int size;
+	    int height;
+ 
+	    NodeLong(long v) {
+	        value = v;
+	        size = height = 1;
+	    }
+ 
+	    NodeLong finalisePosition(NodeLong root) {
+	        int lheight = findDepth(left), rheight = findDepth(right);
+ 
+	        if (lheight > rheight + 1) {
+	            if (findDepth(left.right) > findDepth(left.left))
+	                root = left.rotateLeft(root);
+	            root = rotateRight(root);
+	        } else if (lheight + 1 < rheight) {
+	            if (findDepth(right.left) > findDepth(right.right))
+	                root = right.rotateRight(root);
+	            root = rotateLeft(root);
+	        } else {
+	            setParameters();
+	        }
+ 
+	        return root;
+	    }
+ 
+	    NodeLong rotateRight(NodeLong root) {
+	        NodeLong A = this, B = left, P = parent;
+ 
+	        if (P != null) {
+	            if (P.left == this) P.left = B;
+	            else if (P.right == this) P.right = B;
+	            else System.exit(7 / 0);
+	        } else root = B;
+	        B.parent = A.parent;
+ 
+	        A.left = B.right;
+	        if (B.right != null) B.right.parent = A;
+	        B.right = A;
+	        A.parent = B;
+ 
+	        A.setParameters();
+	        B.setParameters();
+ 
+	        return root;
+	    }
+ 
+	    NodeLong rotateLeft(NodeLong root) {
+	        NodeLong A = this, B = right, P = parent;
+ 
+	        if (P != null) {
+	            if (P.left == this) P.left = B;
+	            else if (P.right == this) P.right = B;
+	            else System.exit(7 / 0);
+	        } else root = B;
+	        B.parent = A.parent;
+ 
+	        A.right = B.left;
+	        if (B.left != null) B.left.parent = A;
+	        B.left = A;
+	        A.parent = B;
+ 
+	        A.setParameters();
+	        B.setParameters();
+ 
+	        return root;
+	    }
+ 
+	    void setParameters() {
+	        size = 1 + findSize(left) + findSize(right);
+	        height = 1 + Math.max(findDepth(left), findDepth(right));
+	    }
+ 
+	    int size() {
+	        return size;
+	    }
+ 
+	    int findDepth(NodeLong node) {
+	        return node == null ? 0 : node.height;
+	    }
+ 
+	    static int findSize(NodeLong node) {
+	        return node == null ? 0 : node.size();
+	    }
+ 
+	    public int compareTo(NodeLong node) {
+	        return Long.compare(value, node.value);
+	    }
+ 
+	    public String toString() {
+	        return value + "";
+	    }
+ 
+	}
+    NodeLong root;
+    boolean allowDuplicates;
+    private int itrInd;
+    private ArrayList<NodeLong> dfsTrav = new ArrayList<>();
+ 
+    public MyTreeSetLong() {
+        root = null;
+    }
+ 
+    public MyTreeSetLong(boolean allowDupli) {
+        root = null;
+        allowDuplicates = allowDupli;
+    }
+ 
+    public boolean add(long value) {
+        return add(new NodeLong(value));
+    }
+ 
+    public int countFloorNodeLongs(long value) {
+        return countFloorNodeLongs(root, new NodeLong(value));
+    }
+ 
+    public int size() {
+        return root == null ? 0 : root.size();
+    }
+ 
+    private boolean add(NodeLong toAdd) {
+        if (root == null) {
+            root = toAdd;
+            return true;
+        }
+ 
+        NodeLong tr = root;
+        while (true) {
+            if (toAdd.compareTo(tr) < 0) {
+                if (tr.left == null) {
+                    tr.left = toAdd;
+                    toAdd.parent = tr;
+                    break;
+                } else tr = tr.left;
+            } else if (allowDuplicates || toAdd.compareTo(tr) > 0) {
+                if (tr.right == null) {
+                    tr.right = toAdd;
+                    toAdd.parent = tr;
+                    break;
+                } else tr = tr.right;
+            } else return false;
+        }
+ 
+        while (toAdd != null) {
+            root = toAdd.finalisePosition(root);
+            toAdd = toAdd.parent;
+        }
+        return true;
+    }
+ 
+    private int countFloorNodeLongs(NodeLong node, NodeLong key) {
+        if (node == null) return 0;
+        else if (node.compareTo(key) > 0)
+            return countFloorNodeLongs(node.left, key);
+        else
+            return NodeLong.findSize(node.left) + 1 + countFloorNodeLongs(node.right, key);
+    }
+ 
+    public Iterator<Long> iterator() {
+        dfsTrav.clear();
+        dfs(root);
+        itrInd = 0;
+        Iterator<Long> iterator = new Iterator<Long>() {
+ 
+            public boolean hasNext() {
+                return itrInd < size();
+            }
+ 
+ 
+            public Long next() {
+                return dfsTrav.get(itrInd++).value;
+            }
+        };
+        return iterator;
+    }
+ 
+    private void dfs(NodeLong node) {
+        if (node == null) return;
+        dfs(node.left);
+        dfsTrav.add(node);
+        dfs(node.right);
+    }
+ 
+    public String toString() {
+        dfsTrav.clear();
+        dfs(root);
+        return dfsTrav.toString();
+    }
+ 
+}
