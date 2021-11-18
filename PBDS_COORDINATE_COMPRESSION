@@ -1,0 +1,184 @@
+/**
+Author : Akshat Jindal
+Codforces Handle : akshatj07
+*/
+
+class PBDS{
+	private int N;	// tot number of Nodes
+	
+	private int[] key; // Coordinate compression ( INDEX : ELEMENTS) 
+	
+	private int[] bit; // Binary Index Tree
+	
+	private int tot; // Keep track of number of elements
+	
+	private int[] count; // count of elements
+	
+	private boolean duplicate; // duplicates are Allowed or Not
+	
+	PBDS(boolean duplicate , int[]... ele){
+		this.duplicate = duplicate;
+		TreeSet<Integer> tree = new TreeSet<>();
+		for(int[] arr:ele) {
+			for(int e:arr) tree.add(e);
+		}
+	
+		this.N = tree.size()+1;
+		key = new int[N];
+		for(int i = 1 ; i<N ; i++) {
+			key[i] = tree.first();
+			tree.remove(key[i]);
+		}
+		bit = new int[N];
+		this.tot = 0;
+		count = new int[N];
+	}
+	
+	// update BIT
+	private void update(int ind , int val ) {
+		for( ; ind<N  ;ind += (ind & (-ind))) {
+			bit[ind] += val;
+		}
+	}
+	
+	// PREFIX SUM for given index
+	private int val(int ind) {
+		int tot = 0;
+		while(ind > 0) {
+			tot += bit[ind];
+			ind -= (ind & (-ind));
+		}	
+		return tot;
+	}
+	
+	// Index on which the Element present
+	private Integer index(int ele) {
+		int l = 1 , r = N-1;
+		while(l<=r) {
+			int m = (l+r)/2;
+			if(key[m] > ele) r = m-1;
+			else l = m+1;
+		}
+		if(r > 0 && key[r] == ele) return r;
+		else return null;
+	}
+	
+	void add(int ele) {
+		Integer ind = index(ele);
+		if(ind == null) return;
+		if(!duplicate && count[ind] > 0) return;
+		update(ind , 1);
+		count[ind]++;
+		tot++;
+	}
+	boolean contains(int ele) {
+		Integer ind = index(ele);
+		if(ind == null) return false;
+		return count[ind] > 0;
+	}
+	boolean remove(int ele) {
+		Integer ind = index(ele);
+		if(ind == null) return false;
+		if(count[ind] == 0 ) return false;
+		update(ind , -1);
+		count[ind]--;
+		tot--;
+		return true;
+	}
+	int size() {
+		return tot;
+	}
+	
+	Integer eleAtIndex(int index) {
+		if(index > tot || index < 1) return null;
+		int l = 1 , r = N-1;
+		while(l<=r) {
+			int m = (l+r)/2;
+			if(val(m) < index) l = m+1;
+			else r = m-1;
+		}
+		return key[l]; 
+	}
+	
+	int count_ceil(int ele) {
+		int l = 1 , r = N-1;
+		while(l<=r) {
+			int m = (l+r)/2;
+			if(key[m] < ele) l = m+1;
+			else r = m-1;
+		}
+		int ind = l-1;
+		
+		int count = val(ind);
+		return tot - count;
+	}
+	
+	Integer ceil(int ele) {
+		int l = 1 , r = N-1;
+		while(l<=r) {
+			int m = (l+r)/2;
+			if(key[m] < ele) l = m+1;
+			else r = m-1;
+		}
+		int ind = l;
+		if(ind == N) return null;
+		int v = val(ind);
+		if(count[ind] == 0) v++;
+		l = 1 ; r = N-1;
+		 l = 1 ; r = N-1;
+			while(l<=r) {
+				int m = (l+r)/2;
+				if(val(m) < v) l = m+1;
+				else r = m-1;
+			}
+		if(l == N) return null;
+		return key[l];
+	}
+	
+	
+	int count_floor(int ele) {
+		int l = 1 , r = N-1;
+		while(l<=r) {
+			int m = (l+r)/2;
+			if(key[m] > ele) r = m-1;
+			else l = m+1;
+		}
+		int ind = r;
+		int count = val(ind);
+		return count;
+	}
+	
+	Integer floor(int ele) {
+		int l = 1 , r = N-1;
+		while(l<=r) {
+			int m = (l+r)/2;
+			if(key[m] > ele) r = m-1;
+			else l = m+1;
+		}
+		int ind = r;
+		int v = val(ind);  
+		if(v == 0) return null;
+		 l = 1 ; r = N-1;
+		while(l<=r) {
+			int m = (l+r)/2;
+			if(val(m) < v) l = m+1;
+			else r = m-1;
+		}
+		if(l == N) return null;
+		return key[l];
+	}
+
+	
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		for(int i  = 1 ; i<N ; i++) {
+			int c = count[i];
+			int ele = key[i];
+			while(c -- >0) {
+				sb.append(ele +",");
+			}
+		}
+		return String.valueOf(sb);
+	}
+	
+}
