@@ -1,0 +1,97 @@
+/**
+Author : Akshat Jindal
+Codeforces Handle : akshatj07
+
+*/
+/**
+                  KEY POINTs
+     tree always be 1 based index
+
+
+*/
+	static void lca_run(int n , ArrayList<ArrayList<Integer>> adj , int root) {
+		MAXN = n+1;
+		GRAPH = adj;
+		 DEPTH = new int[MAXN];
+		REFRACTOR = new int[MAXN][level];
+		memset(-1);
+
+		DEPTH[0] = 0;
+		DEPTH(root, 0);
+		precomputeSparseMatrix(n);
+		
+	}
+	static  int MAXN;
+	static final int level = 18;
+
+	static ArrayList<ArrayList<Integer>>  GRAPH ;
+	static int[] DEPTH = new int[MAXN];
+	static int[][] REFRACTOR = new int[MAXN][level];
+
+	static void DEPTH(int cur, int prev)
+	{
+		DEPTH[cur] = DEPTH[prev] + 1;
+		REFRACTOR[cur][0] = prev;
+		for (int v:GRAPH.get(cur))
+		{
+			if (v != prev)
+				DEPTH(v, cur);
+		}
+	}
+
+	static void precomputeSparseMatrix(int n)
+	{
+		for (int i = 1; i < level; i++)
+		{
+			for (int node = 1; node <= n; node++)
+			{
+				if (REFRACTOR[node][i - 1] != -1)
+					REFRACTOR[node][i] = REFRACTOR[REFRACTOR[node][i - 1]][i - 1];
+			}
+		}
+	}
+
+	// Returning the LCA of u and v
+	// Time complexity : O(log n)
+	static int lca(int u, int v)
+	{
+		if (DEPTH[v] < DEPTH[u])
+		{
+			u = u + v;
+			v = u - v;
+			u = u - v;
+		}
+
+		int diff = DEPTH[v] - DEPTH[u];
+
+		// Step 1 of the pseudocode
+		for (int i = 0; i < level; i++)
+			if (((diff >> i) & 1) == 1)
+				v = REFRACTOR[v][i];
+
+		// now depth[u] == depth[v]
+		if (u == v)
+			return u;
+
+		// Step 2 of the pseudocode
+		for (int i = level - 1; i >= 0; i--)
+			if (REFRACTOR[u][i] != REFRACTOR[v][i])
+			{
+				u = REFRACTOR[u][i];
+				v = REFRACTOR[v][i];
+			}
+
+		return REFRACTOR[u][0];
+	}
+
+	
+	static void memset(int value)
+	{
+		for (int i = 0; i < MAXN; i++)
+		{
+			for (int j = 0; j < level; j++)
+			{
+				REFRACTOR[i][j] = -1;
+			}
+		}
+	}
